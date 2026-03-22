@@ -141,17 +141,24 @@ def image_search(request: HttpRequest) -> HttpResponse:
 
     query_image = image_form.cleaned_data["query_image"]
     query_signature = compute_color_histogram_signature(query_image)
-
-    # TODO(student): implement image similarity ranking.
-    # HINT:
-    # 1) iterate CardImage rows with non-empty signatures
-    # 2) call compare_image_similarity(query_signature, stored_signature)
-    # 3) keep best score per card, sort desc, return top IMAGE_TOP_K
-    # Default fallback: first 3 cards with images, all scores 0.
-    ordered_cards = list(KnowledgeCard.objects.prefetch_related("images").filter(images__isnull=False).distinct()[:IMAGE_TOP_K])
-    match_scores = {card.id: 0.0 for card in ordered_cards}
+    
+    # iterate CardImage rows with non-empty signatures
+    image_similarities = {}
+    for card in CardImage.objects.all():
+        image_binaryIO = card.image.open('rb')
+        stored_signature = compute_color_histogram_signature(image_binaryIO)
+        # call compare_image_similarity
+        image_similarity = compare_image_similarity(query_signature, stored_signature)
+        image_similarities[card.card] = round(image_similarity * 100, 2)
+    
+    # keep best score per card, sort desc
+    image_similarities = {k: v for k, v in sorted(image_similarities.items(), key=lambda item: item[1], reverse=True)}
+    
+    # return top IMAGE_TOP_K
+    ordered_cards = list(image_similarities.keys())[:IMAGE_TOP_K]
+    match_scores = {card.id: image_similarities[card] for card in ordered_cards}    
     match_ranks = {card.id: idx + 1 for idx, card in enumerate(ordered_cards)}
-
+    
     paginator = Paginator(ordered_cards, 9)
     page_obj = paginator.get_page(request.GET.get("page"))
 
