@@ -45,6 +45,7 @@ class CardImage(models.Model):
     image = models.ImageField(upload_to="knowledge_cards/%Y/%m/%d")
     original_filename = models.CharField(max_length=255)
     average_hash = models.CharField(max_length=64, blank=True)
+    histogram = models.CharField(default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

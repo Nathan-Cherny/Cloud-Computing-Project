@@ -37,25 +37,28 @@ def _apply_sort(queryset, sort: str):
 
 
 def _save_images(card: KnowledgeCard, files) -> None:
-    # TODO(student): implement image save/replace logic for one-primary-image policy.
-    # HINT: take files[0], compute histogram signature, then upsert CardImage for this card.
-    # Default fallback keeps app runnable but does not compute signatures.
     if not files:
         return
+    # take files[0]
     uploaded = files[0]
     existing = card.images.first()
+    # compute histogram signature
+    histogram = compute_color_histogram_signature(uploaded.open('rb'))
+    # upsert CardImage for this card!
     if existing:
         existing.image.delete(save=False)
         existing.image = uploaded
         existing.original_filename = uploaded.name
         existing.average_hash = ""
-        existing.save(update_fields=["image", "original_filename", "average_hash"])
+        existing.histogram = histogram
+        existing.save(update_fields=["image", "original_filename", "average_hash", "histogram"])
     else:
         CardImage.objects.create(
             card=card,
             image=uploaded,
             original_filename=uploaded.name,
             average_hash="",
+            histogram=histogram,
         )
 
 
@@ -145,9 +148,8 @@ def image_search(request: HttpRequest) -> HttpResponse:
     # iterate CardImage rows with non-empty signatures
     image_similarities = {}
     for card in CardImage.objects.all():
-        image_binaryIO = card.image.open('rb')
-        stored_signature = compute_color_histogram_signature(image_binaryIO)
         # call compare_image_similarity
+        stored_signature = card.histogram
         image_similarity = compare_image_similarity(query_signature, stored_signature)
         image_similarities[card.card] = round(image_similarity * 100, 2)
     
