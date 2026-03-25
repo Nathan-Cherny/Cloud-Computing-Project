@@ -63,11 +63,3 @@ class CardImage(models.Model):
         if not self.image:
             return ""
         return self.image.url
-        
-    def delete(self, *args, **kwargs):
-        """
-        Deletes the associated S3 file before deleting the database record.
-        """
-        if self.image_url:
-            self.image_url.delete(save=False) # Delete the file from S3
-        super().delete(*args, **kwargs) # Call the superclass delete method to delete the DB record
