@@ -69,6 +69,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 USE_S3 = os.getenv("USE_S3", "0") == "1"
 
+print(USE_S3)
+
 if USE_S3:
     INSTALLED_APPS.append("storages")
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
