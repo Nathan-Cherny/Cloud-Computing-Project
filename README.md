@@ -1,4 +1,28 @@
-Code that I have written:
+-- About me --
+
+This is a knowledge card based storage website. Users are able to:
+
+Upload 'Knowledge Cards' which are little clusters of information about something. Knowledge Cards have
+    a picture (CardImage)
+    title
+    category
+    description
+    summary
+    tags
+
+Users are able to see all their Knowledge Cards. Users can search for and filter knowledge cards by keyword and by similarity to a query image.
+
+Users Knowledge Cards are stored in a sqlite3 database. Images are stored in an AWS S3 bucket. Instance is deployed via AWS EC2.
+
+-- How to Build --
+
+python3 manage.py runserver 0.0.0.0:8000
+
+or start and access AWS EC2 instance
+
+
+
+Code that I have written (technical details, more information in report):
 
 -- _save_images -- 
 
